@@ -32,11 +32,11 @@ import org.gradle.api.NamedDomainObjectSet;
 import org.gradle.api.PolymorphicDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingFormat;
+import org.spongepowered.gradle.vanilla.repository.mappings.format.MappingFormat;
 import org.spongepowered.gradle.vanilla.repository.MinecraftPlatform;
 import org.spongepowered.gradle.vanilla.repository.MinecraftRepositoryExtension;
 import org.spongepowered.gradle.vanilla.repository.mappings.MappingsContainer;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingsEntry;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.MappingsEntry;
 import org.spongepowered.gradle.vanilla.runs.RunConfigurationContainer;
 
 /**

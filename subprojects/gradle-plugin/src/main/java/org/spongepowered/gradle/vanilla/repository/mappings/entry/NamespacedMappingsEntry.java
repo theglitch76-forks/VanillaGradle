@@ -1,14 +1,14 @@
-package org.spongepowered.gradle.vanilla.repository.mappings;
+package org.spongepowered.gradle.vanilla.repository.mappings.entry;
 
 import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
 import org.spongepowered.gradle.vanilla.MinecraftExtension;
 
-public class TinyMappingsEntry extends MappingsEntry {
+public class NamespacedMappingsEntry extends MappingsEntry {
     private final Property<String> from;
     private final Property<String> to;
 
-    public TinyMappingsEntry(
+    public NamespacedMappingsEntry(
             Project project,
             MinecraftExtension extension,
             String name

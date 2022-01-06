@@ -1,6 +1,6 @@
-package org.spongepowered.gradle.vanilla.repository.mappings;
+package org.spongepowered.gradle.vanilla.repository.mappings.entry;
 
-import org.cadixdev.lorenz.MappingSet;
+import net.minecraftforge.srgutils.IMappingFile;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Project;
@@ -33,7 +33,7 @@ public class DelegatingMappingsEntry extends MappingsEntry {
     }
 
     @Override
-    protected <T extends MappingsEntry> MappingSet doResolve(
+    protected <T extends MappingsEntry> IMappingFile doResolve(
             MinecraftResolver.Context context,
             MinecraftResolver.MinecraftEnvironment environment,
             MinecraftPlatform platform,

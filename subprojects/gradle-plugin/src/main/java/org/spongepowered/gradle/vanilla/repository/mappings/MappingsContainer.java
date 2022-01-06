@@ -20,6 +20,8 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.specs.Spec;
 import org.gradle.util.ConfigureUtil;
 import org.spongepowered.gradle.vanilla.MinecraftExtension;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.MappingsEntry;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.NamespacedMappingsEntry;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -38,7 +40,7 @@ public class MappingsContainer implements PolymorphicDomainObjectContainer<Mappi
         this.extension = extension;
         ExtensiblePolymorphicDomainObjectContainer<MappingsEntry> delegate = project.getObjects().polymorphicDomainObjectContainer(MappingsEntry.class);
         delegate.registerFactory(MappingsEntry.class, name -> new MappingsEntry(this.project, this.extension, name));
-        delegate.registerFactory(TinyMappingsEntry.class, name -> new TinyMappingsEntry(this.project, this.extension, name));
+        delegate.registerFactory(NamespacedMappingsEntry.class, name -> new NamespacedMappingsEntry(this.project, this.extension, name));
         this.delegate = delegate;
     }
 

@@ -42,6 +42,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public interface MinecraftResolver {
@@ -104,22 +105,29 @@ public interface MinecraftResolver {
      *     environment and a target path
      * @return a future returning the result of resolving a jar path
      */
-    CompletableFuture<ResolutionResult<Path>> produceAssociatedArtifactSync(
-        final MinecraftPlatform side, final String version, final List<ArtifactModifier> modifiers, final String id,
-        final Set<AssociatedResolutionFlags> flags, final BiConsumer<MinecraftEnvironment, Path> action
+    CompletableFuture<ResolutionResult<Path>> produceAssociatedArtifact(
+        final MinecraftPlatform side,
+        final String version,
+        final List<ArtifactModifier> modifiers,
+        final String id,
+        final Set<AssociatedResolutionFlags> flags,
+        final BiFunction<MinecraftEnvironment, Path, CompletableFuture<?>> action
     );
 
     /**
      * @deprecated Use the version with an ordered list of modifiers instead.
      */
     @Deprecated
-    default CompletableFuture<ResolutionResult<Path>> produceAssociatedArtifactSync(
-            final MinecraftPlatform side, final String version, final Set<ArtifactModifier> modifiers, final String id,
-            final Set<AssociatedResolutionFlags> flags, final BiConsumer<MinecraftEnvironment, Path> action
+    default CompletableFuture<ResolutionResult<Path>> produceAssociatedArtifact(
+            final MinecraftPlatform side,
+            final String version,
+            final Set<ArtifactModifier> modifiers,
+            final String id,
+            final Set<AssociatedResolutionFlags> flags,
+            final BiFunction<MinecraftEnvironment, Path, CompletableFuture<?>> action
     ) {
-        return produceAssociatedArtifactSync(side, version, new ArrayList<>(modifiers), id, flags, action);
+        return produceAssociatedArtifact(side, version, new ArrayList<>(modifiers), id, flags, action);
     }
-
     /**
      * Block on the completion of a provided future, processing "sync" tasks while
      * that occurs.

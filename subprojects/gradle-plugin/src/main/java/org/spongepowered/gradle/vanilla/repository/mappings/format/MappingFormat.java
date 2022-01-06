@@ -1,9 +1,10 @@
-package org.spongepowered.gradle.vanilla.repository.mappings;
+package org.spongepowered.gradle.vanilla.repository.mappings.format;
 
-import org.cadixdev.lorenz.MappingSet;
+import net.minecraftforge.srgutils.IMappingFile;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.gradle.api.Named;
 import org.spongepowered.gradle.vanilla.repository.MinecraftResolver;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.MappingsEntry;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,7 +20,7 @@ public abstract class MappingFormat<T extends MappingsEntry> implements Named {
         return entryType;
     }
 
-    public abstract MappingSet read(final Path file, final T entry, MinecraftResolver.Context context) throws IOException;
+    public abstract IMappingFile read(final Path file, final T entry, MinecraftResolver.Context context) throws IOException;
 
     @Override
     public int hashCode() {

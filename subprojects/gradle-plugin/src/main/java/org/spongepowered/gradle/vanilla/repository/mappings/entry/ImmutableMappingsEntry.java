@@ -1,10 +1,9 @@
-package org.spongepowered.gradle.vanilla.internal.repository.mappings;
+package org.spongepowered.gradle.vanilla.repository.mappings.entry;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.gradle.api.Project;
 import org.spongepowered.gradle.vanilla.MinecraftExtension;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingsEntry;
 
 public abstract class ImmutableMappingsEntry extends MappingsEntry {
     private boolean hasInitialized = false;

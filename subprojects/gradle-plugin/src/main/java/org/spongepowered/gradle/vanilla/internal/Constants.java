@@ -103,8 +103,6 @@ public final class Constants {
         public static final String MERGE_TOOL = "net.minecraftforge:mergetool:" + BuildVersions.MERGE_TOOL;
         public static final String ACCESS_WIDENER = "net.fabricmc:access-widener:" + BuildVersions.ACCESS_WIDENER;
         public static final String FORGE_FLOWER = "net.minecraftforge:forgeflower:" + BuildVersions.FORGEFLOWER;
-        public static final String LORENZ_TINY = "net.fabricmc:lorenz-tiny:" + BuildVersions.LORENZ_TINY;
-        public static final String MAPPING_IO = "net.fabricmc:mapping-io:" + BuildVersions.MAPPING_IO;
         public static final String FEATHER = "org.parchmentmc:feather:" + BuildVersions.FEATHER;
         public static final String FEATHER_IO_GSON = "org.parchmentmc.feather:io-gson:" + BuildVersions.FEATHER;
         public static final String FORCED_ASM = BuildVersions.ASM;
@@ -139,7 +137,6 @@ public final class Constants {
         public static final String MINECRAFT_NATIVES = "minecraftNatives";
         public static final String MERGETOOL = "mergetool";
         public static final String ACCESS_WIDENER = "accessWidener";
-        public static final String REMAP_TINY = "remapTiny";
         public static final String REMAP_PARCHMENT = "remapParchment";
         public static final String FORGE_FLOWER = "forgeFlower";
         public static final String CLASS_DUMP = "classDump";
@@ -164,7 +161,8 @@ public final class Constants {
      * Extra dependencies that are injected into the project.
      */
     public static final Set<GroupArtifactVersion> INJECTED_DEPENDENCIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-        GroupArtifactVersion.of("com.google.code.findbugs", "jsr305", "3.0.2")
+        GroupArtifactVersion.of("com.google.code.findbugs", "jsr305", "3.0.2"),
+        GroupArtifactVersion.of("org.jetbrains", "annotations", "23.0.0") // 1.18+ only technically
     )));
 
     private Constants() {

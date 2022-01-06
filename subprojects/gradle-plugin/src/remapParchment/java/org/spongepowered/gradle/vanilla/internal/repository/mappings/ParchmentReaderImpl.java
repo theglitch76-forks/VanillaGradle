@@ -2,12 +2,9 @@ package org.spongepowered.gradle.vanilla.internal.repository.mappings;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.cadixdev.lorenz.MappingSet;
-import org.cadixdev.lorenz.model.ClassMapping;
-import org.cadixdev.lorenz.model.ExtensionKey;
-import org.cadixdev.lorenz.model.FieldMapping;
-import org.cadixdev.lorenz.model.MethodMapping;
-import org.cadixdev.lorenz.model.MethodParameterMapping;
+
+import net.minecraftforge.srgutils.IMappingBuilder;
+import net.minecraftforge.srgutils.IMappingFile;
 import org.parchmentmc.feather.io.gson.MDCGsonAdapterFactory;
 import org.parchmentmc.feather.io.gson.OffsetDateTimeAdapter;
 import org.parchmentmc.feather.io.gson.SimpleVersionAdapter;
@@ -16,17 +13,19 @@ import org.parchmentmc.feather.mapping.MappingDataContainer;
 import org.parchmentmc.feather.mapping.VersionedMappingDataContainer;
 import org.parchmentmc.feather.util.SimpleVersion;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public class ParchmentReaderImpl {
-    @SuppressWarnings("unchecked")
-    private static final ExtensionKey<List<String>> JAVADOC_EXTENSION = new ExtensionKey<>((Class<List<String>>) (Class<?>) List.class, "javadoc");
+    // Parchment javadoc is different from tinyv2 comments, so we use a different meta key
+    private static final String JAVADOC = "parchment_javadoc";
     private static final Gson GSON = new GsonBuilder()
             // Required for `MappingDataContainer` and inner data classes
             .registerTypeAdapterFactory(new MDCGsonAdapterFactory())
@@ -38,32 +37,84 @@ public class ParchmentReaderImpl {
             .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter())
             .create();
 
-    public static void read(MappingSet output, Path file) throws IOException {
+    public static IMappingFile read(Path file) throws IOException {
         final MappingDataContainer parchmentData;
+
         try (BufferedReader reader = Files.newBufferedReader(file)) {
             parchmentData = GSON.fromJson(reader, VersionedMappingDataContainer.class);
         }
-        for (final MappingDataContainer.ClassData parchmentClassMapping : parchmentData.getClasses()) {
-            final ClassMapping<?, ?> classMapping = output.getOrCreateClassMapping(parchmentClassMapping.getName());
-            classMapping.set(JAVADOC_EXTENSION, parchmentClassMapping.getJavadoc());
 
-            for (final MappingDataContainer.FieldData field : parchmentClassMapping.getFields()) {
-                final FieldMapping fieldMapping = classMapping.getOrCreateFieldMapping(field.getName(), field.getDescriptor());
-                fieldMapping.set(JAVADOC_EXTENSION, field.getJavadoc());
+        IMappingBuilder builder = IMappingBuilder.create();
+
+        for (final MappingDataContainer.ClassData parchmentClass : parchmentData.getClasses()) {
+            final IMappingBuilder.IClass classMapping = builder.addClass(parchmentClass.getName(), parchmentClass.getName());
+            final String classJavadoc = convertList(parchmentClass.getJavadoc());
+
+            if (classJavadoc != null) {
+                classMapping.meta(JAVADOC, classJavadoc);
             }
 
-            for (final MappingDataContainer.MethodData method : parchmentClassMapping.getMethods()) {
-                final MethodMapping methodMapping = classMapping.getOrCreateMethodMapping(method.getName(), method.getDescriptor());
-                methodMapping.set(JAVADOC_EXTENSION, method.getJavadoc());
-                for (final MappingDataContainer.ParameterData parameter : method.getParameters()) {
-                    final MethodParameterMapping parameterMapping = methodMapping.getOrCreateParameterMapping(parameter.getIndex());
-                    if (parameter.getName() != null) {
-                        parameterMapping.setDeobfuscatedName(parameter.getName());
+            for (final MappingDataContainer.FieldData parchmentField : parchmentClass.getFields()) {
+                final IMappingBuilder.IField fieldMapping = classMapping.field(parchmentField.getName(), parchmentField.getName());
+                fieldMapping.descriptor(parchmentField.getDescriptor());
+                final String javadoc = convertList(parchmentField.getJavadoc());
+
+                if (javadoc != null) {
+                    fieldMapping.meta(JAVADOC, javadoc);
+                }
+            }
+
+            for (final MappingDataContainer.MethodData parchmentMethod : parchmentClass.getMethods()) {
+                final IMappingBuilder.IMethod methodMapping = classMapping.method(parchmentMethod.getDescriptor(), parchmentMethod.getName(), parchmentMethod.getName());
+                final String methodJavadoc = convertList(parchmentMethod.getJavadoc());
+
+                if (methodJavadoc != null) {
+                    methodMapping.meta(JAVADOC, methodJavadoc);
+                }
+
+                for (final MappingDataContainer.ParameterData parchmentParameter : parchmentMethod.getParameters()) {
+                    final String name = parchmentParameter.getName();
+                    final IMappingBuilder.IParameter parameterMapping;
+
+                    if (name == null) {
+                        parameterMapping = methodMapping.parameter(parchmentParameter.getIndex());
+                    } else {
+                        parameterMapping = methodMapping.parameter(parchmentParameter.getIndex(), null, name);
                     }
-                    if (parameter.getJavadoc() != null) {
-                        parameterMapping.set(JAVADOC_EXTENSION, Collections.singletonList(parameter.getJavadoc()));
+
+                    final String javadoc = parchmentParameter.getJavadoc();
+
+                    if (javadoc != null) {
+                        parameterMapping.meta(JAVADOC, methodJavadoc);
                     }
                 }
+            }
+        }
+
+        for (final MappingDataContainer.PackageData parchmentPackage : parchmentData.getPackages()) {
+            final IMappingBuilder.IPackage packageMapping = builder.addPackage(parchmentPackage.getName(), parchmentPackage.getName());
+            final String javadoc = convertList(parchmentPackage.getJavadoc());
+
+            if (javadoc != null) {
+                packageMapping.meta(JAVADOC, javadoc);
+            }
+        }
+
+        return builder.build().getMap("left", "right"); // TODO
+    }
+
+    private static @Nullable String convertList(List<String> list) {
+        if (list.isEmpty()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> iter = list.iterator();
+        while (true) {
+            sb.append(iter.next());
+            if (iter.hasNext()) {
+                sb.append("\n");
+            } else {
+                return sb.toString();
             }
         }
     }

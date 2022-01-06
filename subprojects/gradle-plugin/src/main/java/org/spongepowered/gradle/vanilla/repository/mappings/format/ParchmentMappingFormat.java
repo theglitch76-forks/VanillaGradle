@@ -1,11 +1,10 @@
-package org.spongepowered.gradle.vanilla.internal.repository.mappings;
+package org.spongepowered.gradle.vanilla.repository.mappings.format;
 
-import org.cadixdev.lorenz.MappingSet;
+import net.minecraftforge.srgutils.IMappingFile;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.gradle.vanilla.internal.repository.ResolvableTool;
 import org.spongepowered.gradle.vanilla.repository.MinecraftResolver;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingFormat;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingsEntry;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.MappingsEntry;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -28,7 +27,7 @@ public class ParchmentMappingFormat extends MappingFormat<@NonNull MappingsEntry
     }
 
     @Override
-    public @NonNull MappingSet read(
+    public @NonNull IMappingFile read(
             @NonNull Path file,
             @NonNull MappingsEntry entry,
             MinecraftResolver.@NonNull Context context
@@ -44,7 +43,7 @@ public class ParchmentMappingFormat extends MappingFormat<@NonNull MappingsEntry
                 }
             }
         }
-        MappingSet mappings = MappingSet.create();
+        IMappingFile mappings;
         URLClassLoader classLoader = CompletableFuture.supplyAsync(() -> context.classLoaderWithTool(ResolvableTool.REMAP_PARCHMENT).get(), context.syncExecutor()).join();
         try {
             Class<?> readerClass = Class.forName(
@@ -52,8 +51,8 @@ public class ParchmentMappingFormat extends MappingFormat<@NonNull MappingsEntry
                     true,
                     classLoader
             );
-            Method readMethod = readerClass.getMethod("read", MappingSet.class, Path.class);
-            readMethod.invoke(null, mappings, file);
+            Method readMethod = readerClass.getMethod("read", Path.class);
+            mappings = (IMappingFile) readMethod.invoke(null, file);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }

@@ -35,7 +35,6 @@ import java.util.Arrays;
 public enum ResolvableTool {
     JAR_MERGE(Constants.Configurations.MERGETOOL, Constants.WorkerDependencies.MERGE_TOOL),
     ACCESS_WIDENER(Constants.Configurations.ACCESS_WIDENER, Constants.WorkerDependencies.ACCESS_WIDENER),
-    REMAP_TINY(Constants.Configurations.REMAP_TINY, new Dependency(Constants.WorkerDependencies.LORENZ_TINY).setNonTransitive(), new Dependency(Constants.WorkerDependencies.MAPPING_IO)),
     REMAP_PARCHMENT(Constants.Configurations.REMAP_PARCHMENT, Constants.WorkerDependencies.FEATHER, Constants.WorkerDependencies.FEATHER_IO_GSON),
     ;
 

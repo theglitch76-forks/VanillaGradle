@@ -42,24 +42,17 @@ import org.gradle.util.ConfigureUtil;
 import org.spongepowered.gradle.vanilla.MinecraftExtension;
 import org.spongepowered.gradle.vanilla.internal.model.VersionClassifier;
 import org.spongepowered.gradle.vanilla.internal.model.VersionDescriptor;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.CSrgMappingFormat;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.ObfMappingsEntry;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.OfficialMappingsEntry;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.ParchmentMappingFormat;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.ProGuardMappingFormat;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.SrgMappingFormat;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.TSrgMappingFormat;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.TinyMappingFormat;
-import org.spongepowered.gradle.vanilla.internal.repository.mappings.XSrgMappingFormat;
 import org.spongepowered.gradle.vanilla.internal.repository.modifier.MappingsModifier;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingFormat;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingsContainer;
-import org.spongepowered.gradle.vanilla.repository.mappings.MappingsEntry;
+import org.spongepowered.gradle.vanilla.repository.mappings.*;
 import org.spongepowered.gradle.vanilla.repository.MinecraftPlatform;
 import org.spongepowered.gradle.vanilla.internal.repository.MinecraftProviderService;
 import org.spongepowered.gradle.vanilla.internal.repository.MinecraftRepositoryPlugin;
 import org.spongepowered.gradle.vanilla.internal.repository.modifier.AccessWidenerModifier;
 import org.spongepowered.gradle.vanilla.internal.repository.modifier.ArtifactModifier;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.MappingsEntry;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.ObfMappingsEntry;
+import org.spongepowered.gradle.vanilla.repository.mappings.entry.OfficialMappingsEntry;
+import org.spongepowered.gradle.vanilla.repository.mappings.format.*;
 import org.spongepowered.gradle.vanilla.runs.RunConfiguration;
 import org.spongepowered.gradle.vanilla.runs.RunConfigurationContainer;
 
@@ -108,16 +101,13 @@ public class MinecraftExtensionImpl implements MinecraftExtension {
         this.injectRepositories = factory.property(Boolean.class).convention(project.provider(() -> !gradle.getPlugins().hasPlugin(MinecraftRepositoryPlugin.class))); // only inject if we aren't already in Settings
         this.mappingFormats = factory.polymorphicDomainObjectContainer((Class<MappingFormat<@NonNull ?>>) (Class<?>) MappingFormat.class);
         this.mappings = new MappingsContainer(project, this);
-        this.minecraftMappings = factory.property(String.class).convention(OfficialMappingsEntry.NAME);
+        this.minecraftMappings = factory.property(String.class).convention("official"); // TODO: use constant
         this.accessWideners = factory.fileCollection();
 
-        this.mappingFormats.add(new ProGuardMappingFormat());
         this.mappingFormats.add(new TinyMappingFormat());
         this.mappingFormats.add(new ParchmentMappingFormat());
-        this.mappingFormats.add(new SrgMappingFormat());
-        this.mappingFormats.add(new TSrgMappingFormat());
-        this.mappingFormats.add(new CSrgMappingFormat());
-        this.mappingFormats.add(new XSrgMappingFormat());
+        this.mappingFormats.add(new FartMappingFormat());
+
         this.mappings.add(new ObfMappingsEntry(project, this));
         this.mappings.add(new OfficialMappingsEntry(project, this));
 
@@ -310,8 +300,8 @@ public class MinecraftExtensionImpl implements MinecraftExtension {
         if (this.lazyModifiers == null) {
             final List<ArtifactModifier> modifiers = new ArrayList<>();
 
-            if (!minecraftMappings.get().equals(ObfMappingsEntry.NAME)) {
-                modifiers.add(new MappingsModifier(mappings, ObfMappingsEntry.NAME, minecraftMappings.get()));
+            if (!minecraftMappings.get().equals("obfuscated")) {
+                modifiers.add(new MappingsModifier(mappings, "obfuscated", minecraftMappings.get()));
             }
 
             this.accessWideners.disallowChanges();

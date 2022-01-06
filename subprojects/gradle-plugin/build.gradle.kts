@@ -6,7 +6,7 @@ plugins {
     id("com.gradle.plugin-publish")
     id("net.kyori.indra.publishing.gradle-plugin")
     id("org.jetbrains.gradle.plugin.idea-ext")
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.10"
 }
 
 val commonDeps by configurations.creating {
@@ -18,9 +18,6 @@ val jarDecompile by sourceSets.creating {
     configurations.named(this.implementationConfigurationName) { extendsFrom(commonDeps) }
 }
 val accessWiden by sourceSets.creating {
-    configurations.named(this.implementationConfigurationName) { extendsFrom(commonDeps) }
-}
-val remapTiny by sourceSets.creating {
     configurations.named(this.implementationConfigurationName) { extendsFrom(commonDeps) }
 }
 val remapParchment by sourceSets.creating {
@@ -38,11 +35,9 @@ val gsonVersion: String by project
 val accessWidenerVersion: String by project
 val asmVersion: String by project
 val forgeFlowerVersion: String by project
+val forgeAutoRenamingToolVersion: String by project
 val junitVersion: String by project
 val mergeToolVersion: String by project
-val lorenzVersion: String by project
-val lorenzTinyVersion: String by project
-val mappingIoVersion: String by project
 val featherVersion: String by project
 
 dependencies {
@@ -51,19 +46,13 @@ dependencies {
     commonDeps("org.ow2.asm:asm:$asmVersion")
     commonDeps("org.ow2.asm:asm-commons:$asmVersion")
     commonDeps("org.ow2.asm:asm-util:$asmVersion")
-    commonDeps("org.cadixdev:atlas:0.2.2") {
+    commonDeps("net.minecraftforge:ForgeAutoRenamingTool:$forgeAutoRenamingToolVersion") {
         exclude("org.ow2.asm") // Use our own ASM
+        exclude("net.sf.jopt-simple")
     }
 
     // Just main
     implementation("com.google.code.gson:gson:$gsonVersion")
-    implementation("org.cadixdev:lorenz:$lorenzVersion")
-    implementation("org.cadixdev:lorenz-asm:$lorenzVersion") {
-        exclude("org.ow2.asm") // Use our own ASM
-    }
-
-    implementation("org.cadixdev:lorenz-io-proguard:0.5.7")
-
     compileOnlyApi("org.checkerframework:checker-qual:3.15.0")
     annotationProcessor("org.immutables:value:2.8.8")
     compileOnlyApi("org.immutables:value:2.8.8:annotations")
@@ -91,13 +80,6 @@ dependencies {
     }
     implementation(accessWiden.output)
 
-    "remapTinyCompileOnly"("org.cadixdev:lorenz:$lorenzVersion")
-    "remapTinyCompileOnly"("net.fabricmc:lorenz-tiny:$lorenzTinyVersion") {
-        isTransitive = false
-    }
-    implementation(remapTiny.output)
-
-    "remapParchmentCompileOnly"("org.cadixdev:lorenz:$lorenzVersion")
     "remapParchmentCompileOnly"("com.google.code.gson:gson:$gsonVersion")
     "remapParchmentCompileOnly"("org.parchmentmc:feather:$featherVersion")
     "remapParchmentCompileOnly"("org.parchmentmc.feather:io-gson:$featherVersion")
@@ -123,8 +105,6 @@ tasks {
                 "forgeFlowerVersion" to forgeFlowerVersion,
                 "mergeToolVersion" to mergeToolVersion,
                 "accessWidenerVersion" to accessWidenerVersion,
-                "lorenzTinyVersion" to lorenzTinyVersion,
-                "mappingIoVersion" to mappingIoVersion,
                 "featherVersion" to featherVersion
         )
         inputs.properties(properties)
@@ -152,7 +132,6 @@ tasks {
         from(jarMerge.output)
         from(jarDecompile.output)
         from(accessWiden.output)
-        from(remapTiny.output)
         from(remapParchment.output)
         from(shadow.output)
     }

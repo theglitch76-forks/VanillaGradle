@@ -22,20 +22,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.gradle.vanilla.internal;
+package org.spongepowered.gradle.vanilla.internal.transformer;
 
-/**
- * Versions populated by the build process
- */
-class BuildVersions {
+import net.minecraftforge.fart.api.Transformer;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.spongepowered.gradle.vanilla.internal.asm.LocalVariableNamingClassVisitor;
 
-    private BuildVersions() {
+final class LocalVariableNameFixer implements Transformer {
+
+    @Override
+    public ClassEntry process(final ClassEntry entry) {
+        final ClassReader reader = new ClassReader(entry.getData());
+        final ClassWriter writer = new ClassWriter(reader, 0);
+        final LocalVariableNamingClassVisitor visitor = new LocalVariableNamingClassVisitor(writer);
+        reader.accept(visitor, 0);
+        return ClassEntry.create(entry.getName(), entry.getTime(), writer.toByteArray());
     }
-
-    public static final String ASM = "${asmVersion}";
-    public static final String FORGEFLOWER = "${forgeFlowerVersion}";
-    public static final String MERGE_TOOL = "${mergeToolVersion}";
-    public static final String ACCESS_WIDENER = "${accessWidenerVersion}";
-    public static final String FEATHER = "${featherVersion}";
 
 }
